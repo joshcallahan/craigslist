@@ -2,7 +2,7 @@ const request = require("request-promise");
 const cheerio = require("cheerio");
 const ObjectsToCsv = require('objects-to-csv');
 
-const url = "https://toronto.craigslist.org/d/software-qa-dba-etc/search/sof";
+const url = "https://toronto.craigslist.org/search/jjj?s=";
 
 const scrapeSample = {
   title: "Technical Autonomous Vehicle Trainer",
@@ -20,22 +20,24 @@ const scrapeResults = [];
 
 async function scrapeJobHeader() {
   try {
-    const htmlResult = await request.get(url);
-    const $ = await cheerio.load(htmlResult);
-
-    $(".result-info").each((index, element) => {
-      const resultTitle = $(element).children(".result-title");
-      const title = resultTitle.text();
-      const url = resultTitle.attr("href");
-      const datePosted = $(element)
-        .children("time")
-        .attr("datetime");
-      const hood = $(element)
-        .find(".result-hood")
-        .text();
-      const scrapeResult = { title, url, datePosted, hood };
-      scrapeResults.push(scrapeResult);
-    });
+    for (let index = 0; index <= 120; index += 120) {
+      const htmlResult = await request.get("https://toronto.craigslist.org/search/jjj?s=" + index);
+      const $ = await cheerio.load(htmlResult);
+  
+      $(".result-info").each((index, element) => {
+        const resultTitle = $(element).children(".result-title");
+        const title = resultTitle.text();
+        const url = resultTitle.attr("href");
+        const datePosted = $(element)
+          .children("time")
+          .attr("datetime");
+        const hood = $(element)
+          .find(".result-hood")
+          .text();
+        const scrapeResult = { title, url, datePosted, hood };
+        scrapeResults.push(scrapeResult);
+      });
+    }
     return scrapeResults;
   } catch (err) {
     console.error(err);
